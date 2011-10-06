@@ -33,8 +33,7 @@
       (void))
     
     (define/public (clear)
-      (set! the-picture
-            (new pgf-picture% [out out])))
+      (set! the-picture (new pgf-picture%)))
     
     (define/public (copy x y width height x2 y2)
       (void))
@@ -110,6 +109,7 @@
     (define/public (get-brush) brush)
     (define/public (get-char-height) (void))
     (define/public (get-char-width) (void))
+    (define/public (get-clipping-matrix) (void))
     (define/public (get-clipping-region) (void))
     (define/public (get-device-scale) (void))
     (define/public (get-font) (void))
