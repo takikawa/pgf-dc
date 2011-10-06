@@ -30,7 +30,8 @@
   pgf-set-fill-color
   pgf-define-color
   pgf-set-stroke-opacity
-  pgf-set-fill-opacity)
+  pgf-set-fill-opacity
+  pgf-path-rectangle-corners)
 
 ;; pgf macros
 (define-syntax (pgf-do stx)
@@ -58,7 +59,8 @@
                 pgf-set-fill-color
                 pgf-define-color
                 pgf-set-stroke-opacity
-                pgf-set-fill-opacity)
+                pgf-set-fill-opacity
+                pgf-path-rectangle-corners)
     (pattern (pgf-path-move-to p:pgf-fun)
              #:attr cmd #'(new pgf-path-move-to%
                                [args (list p.exp)]))
@@ -84,7 +86,10 @@
                                [args (list (make-object pgf-wrap% e))]))
     (pattern (pgf-set-fill-opacity e:expr)
              #:attr cmd #'(new pgf-set-fill-opacity%
-                               [args (list (make-object pgf-wrap% e))])))
+                               [args (list (make-object pgf-wrap% e))]))
+    (pattern (pgf-path-rectangle-corners p1:pgf-fun p2:pgf-fun)
+             #:attr cmd #'(new pgf-path-rectangle-corners%
+                               [args (list p1.exp p2.exp)])))
   
   (syntax-parse stx
     [(_ pic:expr c:pgf-cmd ...)
@@ -157,6 +162,7 @@
 (define-pgf-command pgf-path-ellipse% "pgfpathellipse" 3)
 (define-pgf-command pgf-set-stroke-opacity% "pgfsetstrokeopacity" 1)
 (define-pgf-command pgf-set-fill-opacity% "pgfsetfillopacity" 1)
+(define-pgf-command pgf-path-rectangle-corners% "pgfpathrectanglecorners" 2)
 
 ;; More complicated cases
 (define pgf-coordinate%
