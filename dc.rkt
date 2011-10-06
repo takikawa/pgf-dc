@@ -84,8 +84,12 @@
     (define/public (draw-point x y) (void))
     (define/public (draw-polygon points [x 0] [y 0] [fill-style #f]) (void))
 
-    (define/public (draw-rectangle x y width heigh)
-      (void))
+    (define/public (draw-rectangle x y width height)
+      (pgf-do the-picture
+              (pgf-path-rectangle-corners (pgf-point x y)
+                                          (pgf-point (+ x width)
+                                                     (+ y height)))
+              (pgf-use-path 'stroke)))
 
     (define/public (draw-rounded-rectangle x y width height [radius 0]) (void))
     (define/public (draw-spline x1 y1 x2 y2 x3 y3) (void))
