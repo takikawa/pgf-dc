@@ -33,7 +33,12 @@
   pgf-set-stroke-opacity
   pgf-set-fill-opacity
   pgf-path-rectangle-corners
-  pgf-text)
+  pgf-text
+  pgf-transform-reset
+  pgf-transform-x-scale
+  pgf-transform-y-scale
+  pgf-transform-rotate
+  pgf-transform-shift)
 
 ;; pgf macros
 (define-syntax (pgf-do stx)
@@ -44,7 +49,7 @@
     (pattern (pgf-point n1:expr n2:expr)
              #:attr exp #'(new pgf-point%
                                [args (list (new pgf-coordinate% [val n1])
-                                           (new pgf-coordinate% [val n2]))]))
+                                           (new pgf-coordinate% [val (- n2)]))]))
     (pattern (pgf-point-origin)
              #:attr exp #'(new pgf-point-origin% [args '()])))
   
@@ -64,7 +69,12 @@
                 pgf-set-stroke-opacity
                 pgf-set-fill-opacity
                 pgf-path-rectangle-corners
-                pgf-text)
+                pgf-text
+                pgf-transform-reset
+                pgf-transform-x-scale
+                pgf-transform-y-scale
+                pgf-transform-rotate
+                pgf-transform-shift)
     (pattern (pgf-path-move-to p:pgf-fun)
              #:attr cmd #'(new pgf-path-move-to%
                                [args (list p.exp)]))
@@ -100,7 +110,20 @@
                                [args (list p1.exp p2.exp)]))
     (pattern (pgf-text e:expr (~optional (~seq #:at p:pgf-fun)
                                          #:defaults ([p #'#f])))
-             #:attr cmd #'(new pgf-text% [text e] [point p.exp])))
+             #:attr cmd #'(new pgf-text% [text e] [point p.exp]))
+    (pattern (pgf-transform-x-scale e:expr)
+             #:attr cmd #'(new pgf-transform-x-scale%
+                               [args (list (make-object pgf-wrap% e))]))
+    (pattern (pgf-transform-y-scale e:expr)
+             #:attr cmd #'(new pgf-transform-y-scale%
+                               [args (list (make-object pgf-wrap% e))]))
+    (pattern (pgf-transform-rotate e:expr)
+             #:attr cmd #'(new pgf-transform-rotate% [angle e]))
+    (pattern (pgf-transform-shift p:pgf-fun)
+             #:attr cmd #'(new pgf-transform-shift%
+                               [args (list p.exp)]))
+    (pattern (pgf-transform-reset)
+             #:attr cmd #'(new pgf-transform-reset% [args '()])))
   
   (syntax-parse stx
     [(_ pic:expr c:pgf-cmd ...)
@@ -174,6 +197,14 @@
 (define-pgf-command pgf-set-stroke-opacity% "pgfsetstrokeopacity" 1)
 (define-pgf-command pgf-set-fill-opacity% "pgfsetfillopacity" 1)
 (define-pgf-command pgf-path-rectangle-corners% "pgfpathrectanglecorners" 2)
+(define-pgf-command pgf-transform-reset% "pgftransformreset" 0)
+(define-pgf-command pgf-transform-x-scale% "pgftransformxscale" 1)
+(define-pgf-command pgf-transform-y-scale% "pgftransformyscale" 1)
+(define-pgf-command pgf-transform-shift% "pgftransformshift" 1)
+
+;; utilities
+(define (rad->deg rad)
+  (real->decimal-string (/ (* 180 rad) 3.1415)))
 
 ;; More complicated cases
 (define pgf-coordinate%
@@ -193,14 +224,21 @@
        "\\" "pgfusepath"
        (format "{~a}" (string-join (map symbol->string args) ","))))))
 
+;; transforms
+(define pgf-transform-rotate%
+  (class* object% (pgf<%>)
+    (super-new)
+    (init-field angle)
+    (define/public (get-pgf-code)
+      (format "\\pgftransformrotate{~a}"
+              (rad->deg angle)))))
+
 ;; arcs
 (define pgf-path-arc%
   (class* object% (pgf<%>)
     (super-new)
     (init-field start-angle end-angle
                 x-radius y-radius)
-    (define (rad->deg rad)
-      (real->decimal-string (/ (* 180 rad) 3.1415)))
     (define/public (get-pgf-code)
       (format "\\pgfpatharc{~a}{~a}{~a and ~a}"
               (rad->deg start-angle)
@@ -215,7 +253,7 @@
     (init-field text point)
     (define/public (get-pgf-code)
       (if point
-          (format "\\pgftext[base,at=~a]{~a}"
+          (format "\\pgftext[base,at=~a,left,top]{~a}"
                   (send point get-pgf-code) text)
           (format "\\pgftext{~a}" text)))))
 

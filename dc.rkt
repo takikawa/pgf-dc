@@ -19,6 +19,12 @@
     (define brush (send the-brush-list find-or-create-brush "white" 'solid))
     (define alpha 0)
     
+    ;; transformation matrix
+    (define initial-matrix
+      (vector 1 0 0 1 0 0))
+    (define matrix
+      (vector 0 0 1 1 0))
+    
     (define the-picture
       (new pgf-picture%))
     
@@ -122,11 +128,22 @@
     (define/public (get-font) (void))
     (define/public (get-gl-context) (void))
     (define/public (get-initial-matrix) (void))
-    (define/public (get-origin) (void))
+
     (define/public (get-pen) pen)
-    (define/public (get-rotation) (void))
-    (define/public (get-scale) (void))
+
+    (define/public (get-origin)
+      (values (vector-ref matrix 0)
+              (vector-ref matrix 1)))
+
+    (define/public (get-rotation)
+      (vector-ref matrix 4))
+
+    (define/public (get-scale)
+      (values (vector-ref matrix 2)
+              (vector-ref matrix 3)))
+
     (define/public (get-size) (void))
+    
     (define/public (get-smoothing) (void))
     (define/public (get-text-background) (void))
     (define/public (get-text-extent) (void))
@@ -136,15 +153,66 @@
     (define/public (glyph-exists?) (void))
     (define/public (ok?) #t)
     (define/public (resume-flush) (void))
-    (define/public (rotate angle) (void))
-    (define/public (scale x y) (void))
+
+    ;; coordinate transformations
+
+    (define/public (translate dx dy)
+      (define-values (dx-cur dy-cur) (get-origin))
+      (set-origin (+ dx-cur dx)
+                  (+ dy-cur dy)))
+
+    (define/public (rotate angle)
+      (set-rotation (+ (get-rotation) angle)))
+
+    (define/public (scale x y)
+      (define-values (x-cur y-cur) (get-scale))
+      (set-scale (+ x x-cur)
+                 (+ y y-cur)))
+
+    (define/public (set-origin x y)
+      (vector-set! matrix 0 x)
+      (vector-set! matrix 1 y)
+      (update-transform))
+
+    (define/public (set-rotation angle)
+      (vector-set! matrix 4 angle)
+      (update-transform))
+
+    (define/public (set-scale x y)
+      (vector-set! matrix 2 x)
+      (vector-set! matrix 3 y)
+      (update-transform))
+
+    (define/public (set-smoothing mode) (void))
+    
+    (define/public (transform m) (void))
+  
+    ;; set the PGF transforms
+    (define (update-transform)
+      (define-values (x y) (get-origin))
+      (define-values (x-scale y-scale) (get-scale))
+      (define r (get-rotation))
+      (define-values (xx xy yx yy x0 y0)
+        (values (vector-ref initial-matrix 0)
+                (vector-ref initial-matrix 1)
+                (vector-ref initial-matrix 2)
+                (vector-ref initial-matrix 3)
+                (vector-ref initial-matrix 4)
+                (vector-ref initial-matrix 5)))
+      (pgf-do the-picture
+              (pgf-transform-reset)
+              (pgf-transform-shift (pgf-point (+ x x0 (* y yx))
+                                              (+ y y0 (* x xy))))
+              (pgf-transform-x-scale (* x-scale xx))
+              (pgf-transform-y-scale (* y-scale yy))
+              (pgf-transform-rotate r)))
+
     (define/public (set-alpha alpha) (void))
     (define/public (set-background color) (void))
     (define/public (set-clipping-rect x y width height) (void))
     (define/public (set-clipping-region rgn) (void))
     (define/public (set-font font) (void))
     (define/public (set-initial-matrix m) (void))
-    (define/public (set-origin x y) (void))
     
     (public set-brush set-pen)
     (define set-pen 
@@ -205,9 +273,6 @@
       (string-append "racketcolor"
                      (symbol->string (gensym))))
     
-    (define/public (set-rotation angle) (void))
-    (define/public (set-scale x y) (void))
-    (define/public (set-smoothing mode) (void))
     (define/public (set-text-background color) (void))
     
     (define/public (set-text-foreground color)
@@ -228,6 +293,4 @@
     (define/public (suspend-flush)
       (void))
     
-    (define/public (transform m) (void))
-    (define/public (translate dx dy) (void))
     (define/public (try-color try result) (void))))
