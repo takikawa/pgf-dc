@@ -23,11 +23,11 @@
       (new pgf-picture%))
     
     (define latex-prelog
-      @string-append{\\documentclass{article}
-                     \\usepackage{pgf}
-                     \\begin{document}})
+      @string-append{\documentclass{article}
+                     \usepackage{pgf}
+                     \begin{document}})
     (define latex-epilog
-      @string-append{\\end{document}})
+      @string-append{\end{document}})
     
     (define/public (cache-font-metrics-key)
       (void))
