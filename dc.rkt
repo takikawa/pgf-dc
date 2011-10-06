@@ -92,7 +92,9 @@
 
     (define/public (draw-rounded-rectangle x y width height [radius 0]) (void))
     (define/public (draw-spline x1 y1 x2 y2 x3 y3) (void))
-    (define/public (draw-text text x y [combine #f] [angle 0] [offset 0]) (void))
+    (define/public (draw-text text x y [combine #f] [angle 0] [offset 0])
+      (pgf-do the-picture
+              (pgf-text text #:at (pgf-point x y))))
 
     ;; output the document on the given output-port when done
     (define/public (end-doc)

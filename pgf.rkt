@@ -31,7 +31,8 @@
   pgf-define-color
   pgf-set-stroke-opacity
   pgf-set-fill-opacity
-  pgf-path-rectangle-corners)
+  pgf-path-rectangle-corners
+  pgf-text)
 
 ;; pgf macros
 (define-syntax (pgf-do stx)
@@ -60,7 +61,8 @@
                 pgf-define-color
                 pgf-set-stroke-opacity
                 pgf-set-fill-opacity
-                pgf-path-rectangle-corners)
+                pgf-path-rectangle-corners
+                pgf-text)
     (pattern (pgf-path-move-to p:pgf-fun)
              #:attr cmd #'(new pgf-path-move-to%
                                [args (list p.exp)]))
@@ -89,7 +91,10 @@
                                [args (list (make-object pgf-wrap% e))]))
     (pattern (pgf-path-rectangle-corners p1:pgf-fun p2:pgf-fun)
              #:attr cmd #'(new pgf-path-rectangle-corners%
-                               [args (list p1.exp p2.exp)])))
+                               [args (list p1.exp p2.exp)]))
+    (pattern (pgf-text e:expr (~optional (~seq #:at p:pgf-fun)
+                                         #:defaults ([p #'#f])))
+             #:attr cmd #'(new pgf-text% [text e] [point p.exp])))
   
   (syntax-parse stx
     [(_ pic:expr c:pgf-cmd ...)
@@ -181,6 +186,17 @@
       (string-append
        "\\" "pgfusepath"
        (format "{~a}" (string-join (map symbol->string args) ","))))))
+
+;; for text
+(define pgf-text%
+  (class* object% (pgf<%>)
+    (super-new)
+    (init-field text point)
+    (define/public (get-pgf-code)
+      (if point
+          (format "\\pgftext[base,at=~a]{~a}"
+                  (send point get-pgf-code) text)
+          (format "\\pgftext{~a}" text)))))
 
 ;; commands for setting colors
 (define pgf-set-color-base%
