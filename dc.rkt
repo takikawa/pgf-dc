@@ -104,7 +104,8 @@
     (define/public (end-doc)
       (display latex-prelog out)
       (display (send the-picture get-pgf-code) out)
-      (display latex-epilog out))
+      (display latex-epilog out)
+      (flush-output out))
 
     (define/public (end-page) (void))
     (define/public (erase) (void))
