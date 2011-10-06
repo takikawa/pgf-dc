@@ -50,7 +50,8 @@
     
     (define/public (draw-ellipse x y width height)
       (pgf-do the-picture
-              (pgf-path-ellipse (pgf-point x y)
+              (pgf-path-ellipse (pgf-point (+ x (* 1/2 width))
+                                           (+ y (* 1/2 height)))
                                 (pgf-point width 0)
                                 (pgf-point 0 height))
               (pgf-use-path 'fill 'stroke)))
