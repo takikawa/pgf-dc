@@ -182,7 +182,7 @@
     (init-field val)
     (define/public (get-pgf-code)
       ;; this should depend on the default coordinates used
-      (format "~acm" (real->decimal-string val)))))
+      (format "~apt" (real->decimal-string val)))))
 
 (define pgf-use-path%
   (class* object% (pgf<%>)
