@@ -39,7 +39,10 @@
       (void))
     
     (define/public (draw-arc x y width height start-radians end-radians)
-      (void))
+      (pgf-do the-picture
+              (pgf-path-move-to (pgf-point x y))
+              (pgf-path-arc start-radians end-radians width height)
+              (pgf-use-path 'stroke)))
     
     (define/public (draw-bitmap source dest-x dest-y
                                 [style #f] [color #f] [mask #f])

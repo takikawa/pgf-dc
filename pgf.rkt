@@ -25,6 +25,7 @@
   pgf-path-move-to
   pgf-path-line-to
   pgf-path-ellipse
+  pgf-path-arc
   pgf-use-path
   pgf-set-stroke-color
   pgf-set-fill-color
@@ -56,6 +57,7 @@
                 pgf-path-line-to
                 pgf-use-path
                 pgf-path-ellipse
+                pgf-path-arc
                 pgf-set-stroke-color
                 pgf-set-fill-color
                 pgf-define-color
@@ -75,6 +77,10 @@
     (pattern (pgf-path-ellipse p1:pgf-fun p2:pgf-fun p3:pgf-fun)
              #:attr cmd #'(new pgf-path-ellipse%
                                [args (list p1.exp p2.exp p3.exp)]))
+    (pattern (pgf-path-arc e1:expr e2:expr e3:expr e4:expr)
+             #:attr cmd #'(new pgf-path-arc%
+                               [start-angle e1] [end-angle e2]
+                               [x-radius e3] [y-radius e4]))
     (pattern (pgf-set-stroke-color e:expr)
              #:attr cmd #'(new pgf-set-stroke-color% [arg e]))
     (pattern (pgf-set-fill-color e:expr)
@@ -186,6 +192,21 @@
       (string-append
        "\\" "pgfusepath"
        (format "{~a}" (string-join (map symbol->string args) ","))))))
+
+;; arcs
+(define pgf-path-arc%
+  (class* object% (pgf<%>)
+    (super-new)
+    (init-field start-angle end-angle
+                x-radius y-radius)
+    (define (rad->deg rad)
+      (real->decimal-string (/ (* 180 rad) 3.1415)))
+    (define/public (get-pgf-code)
+      (format "\\pgfpatharc{~a}{~a}{~a and ~a}"
+              (rad->deg start-angle)
+              (rad->deg end-angle)
+              (real->decimal-string x-radius)
+              (real->decimal-string y-radius)))))
 
 ;; for text
 (define pgf-text%
