@@ -1,4 +1,4 @@
-#lang racket/base
+#lang at-exp racket/base
 
 (require "pgf.rkt"
          racket/class
@@ -11,17 +11,23 @@
   (class* object% (dc<%>)
     (super-new)
     
-    ;; output-port?
-    (init-field out)
+    (init output)
+    (define out output)
     
     ;; same defaults as other racket/draw dcs
     (define pen (send the-pen-list find-or-create-pen "black" 1 'solid))
     (define brush (send the-brush-list find-or-create-brush "white" 'solid))
+    (define alpha 0)
     
     (define the-picture
-      (new pgf-picture% [out out]))
+      (new pgf-picture%))
     
-    (define/public (write) (display (send the-picture get-pgf-code)))
+    (define latex-prelog
+      @string-append{\\documentclass{article}
+                     \\usepackage{pgf}
+                     \\begin{document}})
+    (define latex-epilog
+      @string-append{\\end{document}})
     
     (define/public (cache-font-metrics-key)
       (void))
@@ -56,19 +62,46 @@
               (pgf-path-line-to (pgf-point x2 y2))
               (pgf-use-path 'stroke)))
     
-    (define/public (draw-lines points [x 0] [y 0]) (void))
+    (define/public (draw-lines points [x-offset 0] [y-offset 0])
+      (define (extract-xy pt)
+        (cond [(is-a? pt point%)
+               (values (send pt get-x) (send pt get-y))]
+              [(pair? pt)
+               (values (car pt) (cdr pt))]))
+
+      (cond [(and (list? points)
+                  (length points) > 2)
+             (define-values (x1 y1)
+               (extract-xy (car points)))
+             (define-values (x2 y2)
+               (extract-xy (cadr points)))
+             (draw-line (+ x-offset x1) (+ y-offset y1)
+                        (+ x-offset x2) (+ y-offset y2))
+             (draw-lines (cdr points) x-offset y-offset)]
+            [else (void)]))
+
     (define/public (draw-path path [x 0] [y 0] [fill-style #f]) (void))
     (define/public (draw-point x y) (void))
     (define/public (draw-polygon points [x 0] [y 0] [fill-style #f]) (void))
-    (define/public (draw-rectangle x y width heigh) (void))
+
+    (define/public (draw-rectangle x y width heigh)
+      (void))
+
     (define/public (draw-rounded-rectangle x y width height [radius 0]) (void))
     (define/public (draw-spline x1 y1 x2 y2 x3 y3) (void))
     (define/public (draw-text text x y [combine #f] [angle 0] [offset 0]) (void))
-    (define/public (end-doc) (void))
+
+    ;; output the document on the given output-port when done
+    (define/public (end-doc)
+      (display latex-prelog out)
+      (display (send the-picture get-pgf-code) out)
+      (display latex-epilog out))
+
     (define/public (end-page) (void))
     (define/public (erase) (void))
     (define/public (flush) (void))
-    (define/public (get-alpha) (void))
+
+    (define/public (get-alpha) alpha)
     (define/public (get-background) (void))
     (define/public (get-brush) brush)
     (define/public (get-char-height) (void))

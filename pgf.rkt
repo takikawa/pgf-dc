@@ -100,7 +100,6 @@
   (class* object% (pgf<%>)
     (super-new)
     
-    (init-field out)
     (define children '())
     
     (define/public (add-child elem)
@@ -111,10 +110,7 @@
        "\\begin{pgfpicture}"
        (string-join (map (λ (c) (send c get-pgf-code)) children)
                     "")
-       "\\end{pgfpicture}"))
-    
-    (define/public (write-picture)
-      (write (get-pgf-code) out))))
+       "\\end{pgfpicture}"))))
 
 ;; simple pgf commands
 (define pgf-command%
