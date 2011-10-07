@@ -139,7 +139,14 @@
          (pgf-do the-picture (pgf-use-path 'stroke))]))
 
     (define/public (draw-rounded-rectangle x y width height [radius 0]) (void))
-    (define/public (draw-spline x1 y1 x2 y2 x3 y3) (void))
+
+    (define/public (draw-spline x1 y1 x2 y2 x3 y3)
+      (pgf-do the-picture
+              (pgf-path-move-to (pgf-point x1 y1))
+              (pgf-path-quadratic-curve-to (pgf-point x2 y2)
+                                           (pgf-point x3 y3))
+              (pgf-use-path 'stroke)))
+
     (define/public (draw-text text x y [combine #f] [angle 0] [offset 0])
       (pgf-do the-picture
               (pgf-text text #:at (pgf-point x y))))
