@@ -45,8 +45,15 @@
       (void))
     
     (define/public (draw-arc x y width height start-radians end-radians)
+      ;; equation for the point along an ellipse
+      ;; X(t) = X_c + a cos(t)
+      ;; Y(t) = Y_c + b sin(5)
+      (define xt (+ (+ x (/ width 2))
+                    (* (/ width 2) (cos start-radians))))
+      (define yt (- (+ y (/ height 2))
+                    (* (/ height 2) (sin start-radians))))
       (pgf-do the-picture
-              (pgf-path-move-to (pgf-point x y))
+              (pgf-path-move-to (pgf-point xt yt))
               (pgf-path-arc start-radians end-radians
                             (* 1/2 width) (* 1/2 height))
               (pgf-use-path 'stroke)))
@@ -265,9 +272,9 @@
         (if (string? color)
             (make-object color% color)
             color))
-      (values (send color red)
-              (send color green)
-              (send color blue)))
+      (values (send color-object red)
+              (send color-object green)
+              (send color-object blue)))
     
     ;; horrible unhygeinic (in TeX-land) hack
     (define (make-color-name)
