@@ -36,6 +36,10 @@
     (define latex-epilog
       @string-append{\end{document}})
     
+    ;; just output the picture without latex pre/epilog
+    (define/public (output-picture)
+      (display (send the-picture get-pgf-code) out))
+    
     (define/public (cache-font-metrics-key)
       (void))
     
@@ -75,32 +79,52 @@
               (pgf-use-path 'fill 'stroke)))
     
     (define/public (draw-line x1 y1 x2 y2)
+      (put-line x1 y1 x2 y2)
+      (pgf-do the-picture (pgf-use-path 'stroke)))
+    
+    ;; add a path to the picture without stroking it
+    (define (put-line x1 y1 x2 y2)
       (pgf-do the-picture
               (pgf-path-move-to (pgf-point x1 y1))
-              (pgf-path-line-to (pgf-point x2 y2))
-              (pgf-use-path 'stroke)))
+              (pgf-path-line-to (pgf-point x2 y2))))
     
     (define/public (draw-lines points [x-offset 0] [y-offset 0])
+      (put-lines points x-offset y-offset)
+      (pgf-do the-picture (pgf-use-path 'stroke)))
+      
+    (define/public (put-lines points x-offset y-offset)
       (define (extract-xy pt)
         (cond [(is-a? pt point%)
                (values (send pt get-x) (send pt get-y))]
               [(pair? pt)
                (values (car pt) (cdr pt))]))
 
-      (cond [(and (list? points)
-                  (length points) > 2)
-             (define-values (x1 y1)
-               (extract-xy (car points)))
-             (define-values (x2 y2)
-               (extract-xy (cadr points)))
-             (draw-line (+ x-offset x1) (+ y-offset y1)
-                        (+ x-offset x2) (+ y-offset y2))
-             (draw-lines (cdr points) x-offset y-offset)]
-            [else (void)]))
+      ;; after the first point, line to each next one
+      (define (put-lines-helper points)
+        (cond [(null? points) (void)]
+              [else
+               (define-values (x y) (extract-xy (car points)))
+               (pgf-do the-picture
+                       (pgf-path-line-to (pgf-point (+ x x-offset)
+                                                    (+ y y-offset))))
+               (put-lines-helper (cdr points))]))
+
+      ;; move to the first point before doing anything
+      (cond [(null? points) (void)]
+            [else
+             (define-values (x y) (extract-xy (car points)))
+             (pgf-do the-picture
+                     (pgf-path-move-to (pgf-point (+ x x-offset) (+ y y-offset))))
+             (put-lines-helper (cdr points))]))
 
     (define/public (draw-path path [x 0] [y 0] [fill-style #f]) (void))
     (define/public (draw-point x y) (void))
-    (define/public (draw-polygon points [x 0] [y 0] [fill-style #f]) (void))
+
+    (define/public (draw-polygon points [x-offset 0] [y-offset 0] [fill-style #f])
+      (put-lines points x-offset y-offset)
+      (pgf-do the-picture
+              (pgf-path-close)
+              (pgf-use-path 'stroke 'fill)))
 
     (define/public (draw-rectangle x y width height)
       (pgf-do the-picture

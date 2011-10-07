@@ -26,6 +26,7 @@
   pgf-path-line-to
   pgf-path-ellipse
   pgf-path-arc
+  pgf-path-close
   pgf-use-path
   pgf-set-stroke-color
   pgf-set-fill-color
@@ -63,6 +64,7 @@
                 pgf-use-path
                 pgf-path-ellipse
                 pgf-path-arc
+                pgf-path-close
                 pgf-set-stroke-color
                 pgf-set-fill-color
                 pgf-define-color
@@ -91,6 +93,8 @@
              #:attr cmd #'(new pgf-path-arc%
                                [start-angle e1] [end-angle e2]
                                [x-radius e3] [y-radius e4]))
+    (pattern (pgf-path-close)
+             #:attr cmd #'(new pgf-path-close% [args '()]))
     (pattern (pgf-set-stroke-color e:expr)
              #:attr cmd #'(new pgf-set-stroke-color% [arg e]))
     (pattern (pgf-set-fill-color e:expr)
@@ -194,6 +198,7 @@
 (define-pgf-command pgf-path-move-to% "pgfpathmoveto" 1)
 (define-pgf-command pgf-path-line-to% "pgfpathlineto" 1)
 (define-pgf-command pgf-path-ellipse% "pgfpathellipse" 3)
+(define-pgf-command pgf-path-close% "pgfpathclose" 0)
 (define-pgf-command pgf-set-stroke-opacity% "pgfsetstrokeopacity" 1)
 (define-pgf-command pgf-set-fill-opacity% "pgfsetfillopacity" 1)
 (define-pgf-command pgf-path-rectangle-corners% "pgfpathrectanglecorners" 2)
