@@ -138,7 +138,20 @@
         [else
          (pgf-do the-picture (pgf-use-path 'stroke))]))
 
-    (define/public (draw-rounded-rectangle x y width height [radius 0]) (void))
+    (define/public (draw-rounded-rectangle x y width height [radius -0.25])
+      (define-values (x-arc y-arc)
+        (if (positive? radius)
+            (values radius radius)
+            (let ([dim (* (min width height) (abs radius))])
+              (values dim dim))))
+      (pgf-do the-picture
+              (pgf-scope-begin)
+              (pgf-set-corners-arced x-arc y-arc)
+              (pgf-path-rectangle-corners (pgf-point x y)
+                                          (pgf-point (+ x width)
+                                                     (+ y height)))
+              (pgf-use-path 'stroke 'fill)
+              (pgf-scope-end)))
 
     (define/public (draw-spline x1 y1 x2 y2 x3 y3)
       (pgf-do the-picture
@@ -349,4 +362,7 @@
       (send result set 
             (send try red)
             (send try green)
-            (send try blue)))))
+            (send try blue)))
+
+    ;; set up the initial environment
+    (update-transform)))

@@ -41,7 +41,10 @@
   pgf-transform-x-scale
   pgf-transform-y-scale
   pgf-transform-rotate
-  pgf-transform-shift)
+  pgf-transform-shift
+  pgf-scope-begin
+  pgf-scope-end
+  pgf-set-corners-arced)
 
 ;; pgf macros
 (define-syntax (pgf-do stx)
@@ -80,7 +83,10 @@
                 pgf-transform-x-scale
                 pgf-transform-y-scale
                 pgf-transform-rotate
-                pgf-transform-shift)
+                pgf-transform-shift
+                pgf-scope-begin
+                pgf-scope-end
+                pgf-set-corners-arced)
     (pattern (pgf-path-move-to p:pgf-fun)
              #:attr cmd #'(new pgf-path-move-to%
                                [args (list p.exp)]))
@@ -136,7 +142,14 @@
              #:attr cmd #'(new pgf-transform-shift%
                                [args (list p.exp)]))
     (pattern (pgf-transform-reset)
-             #:attr cmd #'(new pgf-transform-reset% [args '()])))
+             #:attr cmd #'(new pgf-transform-reset% [args '()]))
+    (pattern (pgf-scope-begin)
+             #:attr cmd #'(new pgf-scope-begin%))
+    (pattern (pgf-scope-end)
+             #:attr cmd #'(new pgf-scope-end%))
+    (pattern (pgf-set-corners-arced e1:expr e2:expr)
+             #:attr cmd #'(new pgf-set-corners-arced%
+                               [args (list e1 e2)])))
   
   (syntax-parse stx
     [(_ pic:expr c:pgf-cmd ...)
@@ -194,6 +207,19 @@
     (init-field val)
     (define/public (get-pgf-code)
       (format "~a" val))))
+
+;; pgf scoping environment
+(define pgf-scope-begin%
+  (class* object% (pgf<%>)
+    (super-new)
+    (define/public (get-pgf-code)
+      "\\begin{pgfscope}")))
+
+(define pgf-scope-end%
+  (class* object% (pgf<%>)
+    (super-new)
+    (define/public (get-pgf-code)
+      "\\end{pgfscope}")))
 
 ;; for defining simple commands
 (define-syntax-rule (define-pgf-command CNAME NAME NUM-ARGS)
@@ -261,6 +287,15 @@
               (rad->deg end-angle)
               (real->decimal-string x-radius)
               (real->decimal-string y-radius)))))
+
+;; this one is a hack to get around the pgfpoint y-axis negation
+(define pgf-set-corners-arced%
+  (class object%
+    (super-new)
+    (init-field args)
+    (define/public (get-pgf-code)
+      (format "\\pgfsetcornersarced{\\pgfpoint{~a}{~a}}"
+              (car args) (cadr args)))))
 
 ;; for text
 (define pgf-text%
