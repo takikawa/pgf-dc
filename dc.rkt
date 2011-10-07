@@ -184,7 +184,8 @@
     
     (define/public (get-smoothing) (void))
     (define/public (get-text-background) (void))
-    (define/public (get-text-extent) (void))
+    (define/public (get-text-extent string [font #f] [combine #f] [offset 0])
+      (void))
     (define/public (get-text-foreground) foreground-color)
     (define/public (get-text-mode) (void))
     (define/public (get-transformation) (void))
