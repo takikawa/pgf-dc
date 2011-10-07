@@ -3,6 +3,7 @@
 (require "pgf.rkt"
          racket/class
          racket/draw
+         racket/draw/private/local
          (for-syntax "pgf.rkt"))
 
 (provide pgf-dc%)
@@ -130,8 +131,8 @@
     (define/public (get-brush) brush)
     (define/public (get-char-height) (void))
     (define/public (get-char-width) (void))
-    (define/public (get-clipping-matrix) (void))
-    (define/public (get-clipping-region) (void))
+    (define/public (get-clipping-matrix) #f)
+    (define/public (get-clipping-region) #f)
     (define/public (get-device-scale) (void))
     (define/public (get-font) (void))
     (define/public (get-gl-context) (void))
