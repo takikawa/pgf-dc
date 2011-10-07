@@ -47,7 +47,8 @@
     (define/public (draw-arc x y width height start-radians end-radians)
       (pgf-do the-picture
               (pgf-path-move-to (pgf-point x y))
-              (pgf-path-arc start-radians end-radians width height)
+              (pgf-path-arc start-radians end-radians
+                            (* 1/2 width) (* 1/2 height))
               (pgf-use-path 'stroke)))
     
     (define/public (draw-bitmap source dest-x dest-y
