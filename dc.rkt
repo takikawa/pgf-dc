@@ -131,8 +131,12 @@
       (pgf-do the-picture
               (pgf-path-rectangle-corners (pgf-point x y)
                                           (pgf-point (+ x width)
-                                                     (+ y height)))
-              (pgf-use-path 'stroke)))
+                                                     (+ y height))))
+      (case (send (get-brush) get-style)
+        [(solid xor panel)
+         (pgf-do the-picture (pgf-use-path 'stroke 'fill))]
+        [else
+         (pgf-do the-picture (pgf-use-path 'stroke))]))
 
     (define/public (draw-rounded-rectangle x y width height [radius 0]) (void))
     (define/public (draw-spline x1 y1 x2 y2 x3 y3) (void))
@@ -181,7 +185,7 @@
     (define/public (get-smoothing) (void))
     (define/public (get-text-background) (void))
     (define/public (get-text-extent) (void))
-    (define/public (get-text-foreground) (void))
+    (define/public (get-text-foreground) foreground-color)
     (define/public (get-text-mode) (void))
     (define/public (get-transformation) (void))
     (define/public (glyph-exists?) (void))
@@ -333,4 +337,8 @@
     (define/public (suspend-flush)
       (void))
     
-    (define/public (try-color try result) (void))))
+    (define/public (try-color try result)
+      (send result set 
+            (send try red)
+            (send try green)
+            (send try blue)))))
