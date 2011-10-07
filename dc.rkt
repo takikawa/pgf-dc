@@ -19,6 +19,7 @@
     (define pen (send the-pen-list find-or-create-pen "black" 1 'solid))
     (define brush (send the-brush-list find-or-create-brush "white" 'solid))
     (define alpha 0)
+    (define foreground-color "black")
     
     ;; transformation matrix
     (define initial-matrix
@@ -306,10 +307,16 @@
       (string-append "racketcolor"
                      (symbol->string (gensym))))
     
-    (define/public (set-text-background color) (void))
+    (define/public (set-text-background color)
+      (void))
     
     (define/public (set-text-foreground color)
-      (void))
+      (set! foreground-color color)
+      (define name (make-color-name))
+      (define-values (r g b) (extract-rgb color))
+      (pgf-do the-picture
+              (pgf-define-color name r g b)
+              (pgf-color name)))
     
     (define/public (set-text-mode mode)
       (void))

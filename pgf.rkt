@@ -35,6 +35,7 @@
   pgf-set-fill-opacity
   pgf-path-rectangle-corners
   pgf-text
+  pgf-color
   pgf-transform-reset
   pgf-transform-x-scale
   pgf-transform-y-scale
@@ -72,6 +73,7 @@
                 pgf-set-fill-opacity
                 pgf-path-rectangle-corners
                 pgf-text
+                pgf-color
                 pgf-transform-reset
                 pgf-transform-x-scale
                 pgf-transform-y-scale
@@ -115,6 +117,8 @@
     (pattern (pgf-text e:expr (~optional (~seq #:at p:pgf-fun)
                                          #:defaults ([p #'#f])))
              #:attr cmd #'(new pgf-text% [text e] [point p.exp]))
+    (pattern (pgf-color e:expr)
+             #:attr cmd #'(new pgf-color% [args (list (make-object pgf-wrap% e))]))
     (pattern (pgf-transform-x-scale e:expr)
              #:attr cmd #'(new pgf-transform-x-scale%
                                [args (list (make-object pgf-wrap% e))]))
@@ -206,6 +210,7 @@
 (define-pgf-command pgf-transform-x-scale% "pgftransformxscale" 1)
 (define-pgf-command pgf-transform-y-scale% "pgftransformyscale" 1)
 (define-pgf-command pgf-transform-shift% "pgftransformshift" 1)
+(define-pgf-command pgf-color% "color" 1)
 
 ;; utilities
 (define (rad->deg rad)
