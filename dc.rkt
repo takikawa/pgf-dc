@@ -61,8 +61,8 @@
       (pgf-do the-picture
               (pgf-path-ellipse (pgf-point (+ x (* 1/2 width))
                                            (+ y (* 1/2 height)))
-                                (pgf-point width 0)
-                                (pgf-point 0 height))
+                                (pgf-point (* 1/2 width) 0)
+                                (pgf-point 0 (* 1/2 height)))
               (pgf-use-path 'fill 'stroke)))
     
     (define/public (draw-line x1 y1 x2 y2)
