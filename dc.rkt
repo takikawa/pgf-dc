@@ -18,7 +18,7 @@
     ;; same defaults as other racket/draw dcs
     (define pen (send the-pen-list find-or-create-pen "black" 1 'solid))
     (define brush (send the-brush-list find-or-create-brush "white" 'solid))
-    (define alpha 0)
+    (define alpha 1)
     (define foreground-color "black")
     
     ;; transformation matrix
@@ -178,7 +178,7 @@
     (define/public (get-alpha) alpha)
     (define/public (get-background) (void))
     (define/public (get-brush) brush)
-    (define/public (get-char-height) (void))
+    (define/public (get-char-height) 1)
     (define/public (get-char-width) (void))
     (define/public (get-clipping-matrix) #f)
     (define/public (get-clipping-region) #f)
@@ -201,11 +201,11 @@
               (vector-ref matrix 3)))
 
     (define/public (get-size) (void))
-    
+
     (define/public (get-smoothing) (void))
     (define/public (get-text-background) (void))
     (define/public (get-text-extent string [font #f] [combine #f] [offset 0])
-      (void))
+      (values (string-length string) 1 1 0))
     (define/public (get-text-foreground) foreground-color)
     (define/public (get-text-mode) (void))
     (define/public (get-transformation) (void))
@@ -266,7 +266,9 @@
               (pgf-transform-y-scale (* y-scale yy))
               (pgf-transform-rotate r)))
 
-    (define/public (set-alpha alpha) (void))
+    (define/public (set-alpha new-alpha)
+      (set! alpha new-alpha))
+
     (define/public (set-background color) (void))
     (define/public (set-clipping-rect x y width height) (void))
     (define/public (set-clipping-region rgn) (void))
@@ -295,37 +297,40 @@
     (define (do-set-pen-style style)
       (case style
         [(transparent) (pgf-do the-picture (pgf-set-stroke-opacity 0))]
-        [(solid xor) (pgf-do the-picture (pgf-set-stroke-opacity 1))]
+        [(solid xor) (void) #;(pgf-do the-picture (pgf-set-stroke-opacity 1))]
         [else (void)]))
     
     (define (do-set-brush-style style)
       (case style
         [(transparent) (pgf-do the-picture (pgf-set-fill-opacity 0))]
-        [(solid panel xor) (pgf-do the-picture (pgf-set-fill-opacity 1))]
+        [(solid panel xor) (void) #;(pgf-do the-picture (pgf-set-fill-opacity 1))]
         [else (void)]))
     
     (define (do-set-brush-color color)
       (define name (make-color-name))
-      (define-values (r g b) (extract-rgb color))
+      (define-values (r g b a) (extract-rgba color))
       (pgf-do the-picture
               (pgf-define-color name r g b)
+              (pgf-set-fill-opacity (* alpha a))
               (pgf-set-fill-color name)))
     
     (define (do-set-pen-color color)
       (define name (make-color-name))
-      (define-values (r g b) (extract-rgb color))
+      (define-values (r g b a) (extract-rgba color))
       (pgf-do the-picture
               (pgf-define-color name r g b)
+              (pgf-set-stroke-opacity (* alpha a))
               (pgf-set-stroke-color name)))
     
-    (define (extract-rgb color)
+    (define (extract-rgba color)
       (define color-object 
         (if (string? color)
             (make-object color% color)
             color))
       (values (send color-object red)
               (send color-object green)
-              (send color-object blue)))
+              (send color-object blue)
+              (send color-object alpha)))
     
     ;; horrible unhygeinic (in TeX-land) hack
     (define (make-color-name)
@@ -337,8 +342,11 @@
     
     (define/public (set-text-foreground color)
       (set! foreground-color color)
+      (update-text-foreground color))
+
+    (define/public (update-text-foreground color)
       (define name (make-color-name))
-      (define-values (r g b) (extract-rgb color))
+      (define-values (r g b a) (extract-rgba color))
       (pgf-do the-picture
               (pgf-define-color name r g b)
               (pgf-color name)))
@@ -365,4 +373,5 @@
             (send try blue)))
 
     ;; set up the initial environment
-    (update-transform)))
+    (update-transform)
+    (update-text-foreground foreground-color)))
