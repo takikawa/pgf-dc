@@ -2,7 +2,8 @@
 
 ;; classes that define pgf commands that are used by the pgf-dc%
 
-(require racket/class
+(require data/gvector
+         racket/class
          racket/string
          racket/stxparam
          (for-syntax racket/base
@@ -164,16 +165,17 @@
 (define pgf-picture%
   (class* object% (pgf<%>)
     (super-new)
-    
-    (define children '())
-    
+
+    (define children (make-gvector))
+
     (define/public (add-child elem)
-      (set! children (append children (list elem))))
-    
+      (gvector-add! children elem))
+
     (define/public (get-pgf-code)
-      (string-append 
+      (string-append
        "\\begin{pgfpicture}"
-       (string-join (map (λ (c) (send c get-pgf-code)) children)
+       (string-join (for/list ([c (in-gvector children)])
+                      (send c get-pgf-code))
                     "")
        "\\end{pgfpicture}"))))
 
@@ -185,20 +187,21 @@
     (define pgf-name name)
     (init-field args)
     (init-field num-args)
-    
+
     (when (not (and (list? args)
                     (= (length args) num-args)))
       (error (string->symbol name)
              "wrong number of arguments: ~s"
              args))
-    
+
     (define/public (get-pgf-code)
-      (string-append 
+      (string-append
        "\\" pgf-name
-       (string-join (map (λ (arg) 
+       (string-join (map (λ (arg)
                            (string-append "{" (send arg get-pgf-code) "}"))
                          args)
-                    "")))))
+                    "")
+       "\n"))))
 
 ;; wrap a value in a pgf object
 (define pgf-wrap%
@@ -224,7 +227,7 @@
 ;; for defining simple commands
 (define-syntax-rule (define-pgf-command CNAME NAME NUM-ARGS)
   (define CNAME
-    (class pgf-command% 
+    (class pgf-command%
       (super-new [name NAME]
                  [num-args NUM-ARGS]))))
 
