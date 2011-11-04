@@ -4,6 +4,7 @@
          racket/class
          racket/draw
          racket/draw/private/local
+         racket/vector
          (for-syntax "pgf.rkt"))
 
 (provide pgf-dc%)
@@ -12,8 +13,9 @@
   (class* object% (dc<%>)
     (super-new)
     
-    (init output)
-    (define out output)
+    (init output-file)
+    (define out-file output-file)
+    (define out #f)
     
     ;; same defaults as other racket/draw dcs
     (define pen (send the-pen-list find-or-create-pen "black" 1 'solid))
@@ -41,8 +43,7 @@
     (define/public (output-picture)
       (display (send the-picture get-pgf-code) out))
     
-    (define/public (cache-font-metrics-key)
-      (void))
+    (define/public (cache-font-metrics-key) 0)
     
     (define/public (clear)
       (set! the-picture (new pgf-picture%)))
@@ -160,23 +161,30 @@
                                            (pgf-point x3 y3))
               (pgf-use-path 'stroke)))
 
-    (define/public (draw-text text x y [combine #f] [angle 0] [offset 0])
+    (define/public (draw-text text x y [combine #f] [offset 0] [angle 0])
+      (pgf-do the-picture (pgf-scope-begin))
+      (update-text-foreground foreground-color)
       (pgf-do the-picture
-              (pgf-text text #:at (pgf-point x y))))
+              (pgf-set-fill-opacity 1)
+              (pgf-text (substring text offset)
+                        #:at (pgf-point x y)
+                        #:rotation angle)
+              (pgf-scope-end)))
 
     ;; output the document on the given output-port when done
     (define/public (end-doc)
-      (display latex-prelog out)
       (display (send the-picture get-pgf-code) out)
-      (display latex-epilog out)
-      (flush-output out))
+      (close-output-port out))
 
     (define/public (end-page) (void))
     (define/public (erase) (void))
     (define/public (flush) (void))
 
     (define/public (get-alpha) alpha)
-    (define/public (get-background) (void))
+
+    ;; TODO: stub value
+    (define/public (get-background) (make-object color% "white"))
+
     (define/public (get-brush) brush)
     (define/public (get-char-height) 1)
     (define/public (get-char-width) (void))
@@ -205,10 +213,16 @@
     (define/public (get-smoothing) (void))
     (define/public (get-text-background) (void))
     (define/public (get-text-extent string [font #f] [combine #f] [offset 0])
-      (values (string-length string) 1 1 0))
+      (values (* 4.7 (string-length (substring string offset)))
+              10 3 0))
     (define/public (get-text-foreground) foreground-color)
-    (define/public (get-text-mode) (void))
-    (define/public (get-transformation) (void))
+
+    ;; TODO: stub value
+    (define/public (get-text-mode) 'solid)
+
+    (define/public (get-transformation)
+      (vector-append (vector initial-matrix) matrix))
+    
     (define/public (glyph-exists?) (void))
     (define/public (ok?) #t)
     (define/public (resume-flush) (void))
@@ -358,7 +372,7 @@
       (void))
     
     (define/public (start-doc message)
-      (void))
+      (set! out (open-output-file out-file #:exists 'replace)))
     
     (define/public (start-page)
       (void))

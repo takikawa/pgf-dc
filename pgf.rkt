@@ -126,9 +126,11 @@
     (pattern (pgf-path-rectangle-corners p1:pgf-fun p2:pgf-fun)
              #:attr cmd #'(new pgf-path-rectangle-corners%
                                [args (list p1.exp p2.exp)]))
-    (pattern (pgf-text e:expr (~optional (~seq #:at p:pgf-fun)
-                                         #:defaults ([p #'#f])))
-             #:attr cmd #'(new pgf-text% [text e] [point p.exp]))
+    (pattern (pgf-text e:expr
+                       (~seq #:at p:pgf-fun)
+                       (~optional (~seq #:rotation r:expr)
+                                  #:defaults ([r #'0])))
+             #:attr cmd #'(new pgf-text% [text e] [point p.exp] [rotation r]))
     (pattern (pgf-color e:expr)
              #:attr cmd #'(new pgf-color% [args (list (make-object pgf-wrap% e))]))
     (pattern (pgf-transform-x-scale e:expr)
@@ -304,12 +306,15 @@
 (define pgf-text%
   (class* object% (pgf<%>)
     (super-new)
-    (init-field text point)
+    (init-field text rotation [point #f])
     (define/public (get-pgf-code)
       (if point
-          (format "\\pgftext[base,at=~a,left,top]{~a}"
-                  (send point get-pgf-code) text)
-          (format "\\pgftext{~a}" text)))))
+          (format "\\pgftext[at=~a,left,top,rotate=~a]{~a}"
+                  (send point get-pgf-code)
+                  (rad->deg rotation)
+                  text)
+          (format "\\pgftext[left,top,rotate=~a]{~a}"
+                  (rad->deg rotation) text)))))
 
 ;; commands for setting colors
 (define pgf-set-color-base%
