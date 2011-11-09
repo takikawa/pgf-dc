@@ -9,14 +9,21 @@
 
 (provide pgf-dc%)
 
+(define-local-member-name font-width-scale)
+(define-local-member-name font-height-scale)
+(define-local-member-name font-baseline-scale)
+
 (define pgf-dc%
   (class* object% (dc<%>)
     (super-new)
-    
+
     (init output-file)
     (define out-file output-file)
     (define out #f)
-    
+    (init-field [font-width-scale 4.7]
+                [font-height-scale 10]
+                [font-baseline-scale 3])
+
     ;; same defaults as other racket/draw dcs
     (define pen (send the-pen-list find-or-create-pen "black" 1 'solid))
     (define brush (send the-brush-list find-or-create-brush "white" 'solid))
@@ -213,8 +220,10 @@
     (define/public (get-smoothing) (void))
     (define/public (get-text-background) (void))
     (define/public (get-text-extent string [font #f] [combine #f] [offset 0])
-      (values (* 4.7 (string-length (substring string offset)))
-              10 3 0))
+      (values (* font-height-scale (string-length (substring string offset)))
+              font-width-scale
+              font-baseline-scale
+              0))
     (define/public (get-text-foreground) foreground-color)
 
     ;; TODO: stub value
