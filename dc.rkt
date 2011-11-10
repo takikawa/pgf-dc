@@ -9,10 +9,6 @@
 
 (provide pgf-dc%)
 
-(define-local-member-name font-width-scale)
-(define-local-member-name font-height-scale)
-(define-local-member-name font-baseline-scale)
-
 (define pgf-dc%
   (class* object% (dc<%>)
     (super-new)
@@ -381,7 +377,9 @@
       (void))
     
     (define/public (start-doc message)
-      (set! out (open-output-file out-file #:exists 'replace)))
+      (set! out (open-output-file out-file #:exists 'replace))
+      (update-transform)
+      (update-text-foreground foreground-color))
     
     (define/public (start-page)
       (void))
@@ -393,8 +391,4 @@
       (send result set 
             (send try red)
             (send try green)
-            (send try blue)))
-
-    ;; set up the initial environment
-    (update-transform)
-    (update-text-foreground foreground-color)))
+            (send try blue)))))
