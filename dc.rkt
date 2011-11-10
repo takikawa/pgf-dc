@@ -5,9 +5,25 @@
          racket/draw
          racket/draw/private/local
          racket/vector
+         (for-syntax racket/base)
+         (for-syntax syntax/parse)
          (for-syntax "pgf.rkt"))
 
 (provide pgf-dc%)
+
+;; provides a single form that will construct
+;; a new init argument and a private field
+(define-syntax (init-define stx)
+  (syntax-parse stx
+    [(_) #'(void)]
+    [(_ NAME:id REST:expr ...)
+     #'(begin (init [NAME-INTERNAL NAME])
+              (define NAME NAME-INTERNAL)
+              (init-define REST ...))]
+    [(_ (NAME:id DEFAULT:expr) REST:expr ...)
+     #'(begin (init ([INIT-INTERNAL NAME] DEFAULT))
+              (define NAME INIT-INTERNAL)
+              (init-define REST ...))]))
 
 (define pgf-dc%
   (class* object% (dc<%>)
@@ -16,9 +32,9 @@
     (init output-file)
     (define out-file output-file)
     (define out #f)
-    (init-field [font-width-scale 4.7]
-                [font-height-scale 10]
-                [font-baseline-scale 3])
+    (init-define [font-width-scale 4.7]
+                 [font-height-scale 10]
+                 [font-baseline-scale 3])
 
     ;; same defaults as other racket/draw dcs
     (define pen (send the-pen-list find-or-create-pen "black" 1 'solid))
