@@ -232,8 +232,8 @@
     (define/public (get-smoothing) (void))
     (define/public (get-text-background) (void))
     (define/public (get-text-extent string [font #f] [combine #f] [offset 0])
-      (values (* font-height-scale (string-length (substring string offset)))
-              font-width-scale
+      (values (* font-width-scale (string-length (substring string offset)))
+              font-height-scale
               font-baseline-scale
               0))
     (define/public (get-text-foreground) foreground-color)
