@@ -41,6 +41,10 @@
     (define brush (send the-brush-list find-or-create-brush "white" 'solid))
     (define alpha 1)
     (define foreground-color "black")
+    (define font (make-object font%))
+    
+    ;; for text measurement
+    (define dc-for-text (new bitmap-dc% [bitmap (make-object bitmap% 1 1)]))
     
     ;; transformation matrix
     (define initial-matrix
@@ -205,12 +209,14 @@
     (define/public (get-background) (make-object color% "white"))
 
     (define/public (get-brush) brush)
-    (define/public (get-char-height) 1)
-    (define/public (get-char-width) (void))
+    (define/public (get-char-height)
+      (send dc-for-text get-char-height))
+    (define/public (get-char-width)
+      (send dc-for-text get-char-width))
     (define/public (get-clipping-matrix) #f)
     (define/public (get-clipping-region) #f)
     (define/public (get-device-scale) (void))
-    (define/public (get-font) (void))
+    (define/public (get-font) font)
     (define/public (get-gl-context) (void))
     (define/public (get-initial-matrix) (void))
 
@@ -231,11 +237,8 @@
 
     (define/public (get-smoothing) (void))
     (define/public (get-text-background) (void))
-    (define/public (get-text-extent string [font #f] [combine #f] [offset 0])
-      (values (* font-width-scale (string-length (substring string offset)))
-              font-height-scale
-              font-baseline-scale
-              0))
+    (define/public (get-text-extent string [-font #f] [combine #f] [offset 0])
+      (send dc-for-text get-text-extent string -font combine offset))
     (define/public (get-text-foreground) foreground-color)
 
     ;; TODO: stub value
@@ -307,7 +310,9 @@
     (define/public (set-background color) (void))
     (define/public (set-clipping-rect x y width height) (void))
     (define/public (set-clipping-region rgn) (void))
-    (define/public (set-font font) (void))
+    (define/public (set-font new-font)
+      (send dc-for-text set-font new-font)
+      (set! font new-font))
     (define/public (set-initial-matrix m) (void))
     
     (public set-brush set-pen)
